@@ -27,8 +27,8 @@
     <!--+==========================+
         |    Package References    |
         +==========================+-->
-    <pkg-ref id="com.techdivision.appserver-io-php.runtime" version="${appserver.runtime.version}" auth="Root">file:./build/appserver-io-php.runtime.pkg</pkg-ref>
-    <pkg-ref id="com.techdivision.appserver-io.appserver" version="${appserver.src.version}" auth="Root">file:./build/appserver-io.appserver.pkg</pkg-ref>
+    <pkg-ref id="com.techdivision.appserver-io-php.runtime" version="${appserver.runtime.version}" auth="Root">file:./build/appserver-io-php.runtime-${appserver.runtime.version}.pkg</pkg-ref>
+    <pkg-ref id="com.techdivision.appserver-io.appserver" version="${appserver.src.version}" auth="Root">file:./build/appserver-io.appserver-${appserver.src.version}.pkg</pkg-ref>
     <!--+==========================+
         |    JavaScript Scripts    |
         +==========================+-->

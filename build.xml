@@ -74,7 +74,9 @@
       <arg line="${target.dir}/composer.phar install --prefer-dist --quiet --no-interaction --ignore-platform-reqs"/>
     </exec>
     <!-- deploy example app by putting it into deploy folder of runtime -->
-    <get src="${appserver.apps.example.url}" dest="${target.dir}/appserver-${appserver.src.version}/deploy" />
+    <get src="${appserver.apps.example.url}" dest="${target.dir}/appserver-${appserver.src.version}/deploy/example.phar" />
+    <!-- create the .dodeploy files -->
+    <touch file="${target.dir}/appserver-${appserver.src.version}/deploy/example.phar.dodeploy" />
     <!-- build sub pkg for osx -->
     <exec dir="${basedir}" executable="pkgbuild">
       <arg value="--root"/>
@@ -87,7 +89,7 @@
       <arg value="${appserver.src.version}"/>
       <arg value="--identifier"/>
       <arg value="com.techdivision.appserver-io.appserver"/>
-      <arg value="${build.dir}/appserver-io.appserver.pkg"/>
+      <arg value="${build.dir}/appserver-io.appserver-${appserver.src.version}.pkg"/>
     </exec>
   </target>
 
@@ -96,8 +98,8 @@
   <!-- ==================================================================== -->
   <target name="create-runtime-pkg">
     <!-- @todo: download runtime tar.get and build a pkg like appserver-src -->
-    <get src="${appserver.runtime.url}" dest="${build.dir}/appserver-io-php.runtime.pkg"/>
-    <!-- build sub pkg for osx -->
+    <get src="${appserver.runtime.url}" dest="${build.dir}/appserver-io-php.runtime-${appserver.runtime.version}.pkg"/>
+    <!-- build sub pkg instead of download it -->
   </target>
 
   <!-- ==================================================================== -->
