@@ -34,7 +34,6 @@
   <target name="prepare" depends="clean">
     <mkdir dir="${target.dir}" />
     <mkdir dir="${build.dir}" />
-    <antcall target="install-composer" />
   </target>
 
   <!-- ==================================================================== -->
@@ -65,6 +64,8 @@
   <!-- Prepares the appserver sources                                       -->
   <!-- ==================================================================== -->
   <target name="prepare-appserver-src">
+    <!-- install local composer -->
+    <antcall target="install-composer" />
     <!-- get appserver sources in specific version -->
     <get src="${appserver.src.url}" dest="${temp.dir}/appserver-src-${appserver.src.version}.zip" />
     <!-- unzip to target dir -->
