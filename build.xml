@@ -62,9 +62,9 @@
   </target>
 
   <!-- ==================================================================== -->
-  <!-- Creates a .pkg package for the appserver sources                    -->
+  <!-- Prepares the appserver sources                                       -->
   <!-- ==================================================================== -->
-  <target name="create-appserver-pkg">
+  <target name="prepare-appserver-src">
     <!-- get appserver sources in specific version -->
     <get src="${appserver.src.url}" dest="${temp.dir}/appserver-src-${appserver.src.version}.zip" />
     <!-- unzip to target dir -->
@@ -77,6 +77,14 @@
     <get src="${appserver.apps.example.url}" dest="${target.dir}/appserver-${appserver.src.version}/deploy/example.phar" />
     <!-- create the .dodeploy files -->
     <touch file="${target.dir}/appserver-${appserver.src.version}/deploy/example.phar.dodeploy" />
+  </target>
+
+  <!-- ==================================================================== -->
+  <!-- Creates a .pkg package for the appserver sources                     -->
+  <!-- ==================================================================== -->
+  <target name="create-appserver-pkg" depends="prepare-appserver-src">
+    <!-- make the install scripts executable -->
+    <chmod perm="755" dir="${basedir}/scripts" includes="*"/>
     <!-- build sub pkg for osx -->
     <exec dir="${basedir}" executable="pkgbuild">
       <arg value="--root"/>
