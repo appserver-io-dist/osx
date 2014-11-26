@@ -5,6 +5,11 @@ chown -R nobody:staff /opt/appserver/var
 chown -R nobody:staff /opt/appserver/webapps
 chown -R nobody:staff /opt/appserver/deploy
 
+# run postinstall script from appserver-io/appserver composer package
+# to set correct path for specific startup scripts
+cd /opt/appserver
+/opt/appserver/bin/php /opt/appserver/bin/composer.phar run-script post-install-cmd
+
 # Start the services
 /opt/appserver/sbin/appserverctl start
 /opt/appserver/sbin/appserver-watcherctl start
