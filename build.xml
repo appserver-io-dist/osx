@@ -54,8 +54,8 @@
   <!-- Installs composer in target directory                                -->
   <!-- ==================================================================== -->
   <target name="install-composer">
-    <get src="https://getcomposer.org/installer" dest="${target.dir}/composer-installer" />
-    <exec dir="${target.dir}" executable="php">
+    <get src="https://getcomposer.org/installer" dest="${temp.dir}/composer-installer" />
+    <exec dir="${temp.dir}" executable="php">
       <arg value="composer-installer" />
     </exec>
   </target>
@@ -72,7 +72,7 @@
     <unzip src="${temp.dir}/appserver-src-${appserver.src.version}.zip" dest="${target.dir}" />
     <!-- install dependencies via composer and let postinstall-scripts proceed -->
     <exec dir="${target.dir}/appserver-${appserver.src.version}" executable="php">
-      <arg line="${target.dir}/composer.phar install --prefer-dist --quiet --no-interaction --ignore-platform-reqs"/>
+      <arg line="${temp.dir}/composer.phar install --prefer-dist --quiet --no-interaction --ignore-platform-reqs"/>
     </exec>
     <!-- deploy example app by putting it into deploy folder of runtime -->
     <get src="${appserver.apps.example.url}" dest="${target.dir}/appserver-${appserver.src.version}/deploy/example.phar" />
