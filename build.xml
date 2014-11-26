@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<!DOCTYPE project>
+<project name="appserver-io/appserver" basedir=".">
+
+  <property environment="env" />
+
+  <tstamp>
+    <format property="time.stamp" pattern="yyyy-MM-dd_HHmmss"/>
+  </tstamp>
+
+  <property file="${basedir}/build.properties"/>
+  <property file="${basedir}/build.default.properties"/>
+
+  <property name="src.dir" value="${basedir}/src" />
+  <property name="target.dir" value="${basedir}/target" />
+  <property name="build.dir" value="${basedir}/build" />
+  <property name="temp.dir" value="/tmp" />
+  <property name="runtime.dir" value="/opt/appserver" />
+
+  <property name="package.name" value="appserver-io.appserver.pkg" />
+
+  <target name="clean">
+    <delete dir="${target.dir}" includeemptydirs="true" quiet="false" verbose="true" failonerror="true"/>
+    <delete dir="${build.dir}" includeemptydirs="true" quiet="false" verbose="true" failonerror="true"/>
+  </target>
+
+  <target name="prepare" depends="clean">
+    <mkdir dir="${target.dir}" />
+    <mkdir dir="${build.dir}" />
+  </target>
+
+  <target name="copy" depends="prepare">
+    <copy todir="${target.dir}" preservelastmodified="true" overwrite="true">
+      <fileset dir="${src.dir}">
+        <include name="**/*" />
+      </fileset>
+    </copy>
+  </target>
+
+  <target name="create-appserver-pkg" depends="copy">
+    <!-- get appserver sources in specific version -->
+    <get src="${appserver.src.url}" dest="${temp.dir}/appserver-src-${appserver.src.version}.zip" />
+    <!-- unzip to target dir -->
+    <unzip src="${temp.dir}/appserver-src-${appserver.src.version}.zip" dest="${target.dir}" />
+    <!-- install dependencies via composer and let postinstall-scripts proceed -->
+    <exec dir="${target.dir}/appserver-${appserver.src.version}" executable="${runtime.dir}/bin/php">
+      <arg line="${runtime.dir}/bin/composer.phar install"/>
+    </exec>
+    <!-- deploy example app by putting it into deploy folder of runtime -->
+    <get src="${appserver.apps.example.url}" dest="${target.dir}/appserver-${appserver.src.version}/deploy" />
+    <!-- build pkg for osx -->
+    <exec dir="${basedir}" executable="pkgbuild">
+      <arg value="--root"/>
+      <arg value="${target.dir}/appserver-${appserver.src.version}"/>
+      <arg value="--install-location"/>
+      <arg value="/opt/appserver"/>
+      <arg value="--version"/>
+      <arg value="${appserver.src.version}"/>
+      <arg value="--identifier"/>
+      <arg value="com.techdivision.appserver-io.appserver"/>
+      <arg value="${build.dir}/${package.name}"/>
+    </exec>
+  </target>
+
+  <target name="create-runtime-pkg">
+    <!-- @todo: download runtime tar.get and build a pkg like appserver-src -->
+    <get src="${appserver.runtime.url}" dest="${build.dir}/appserver-io-php.runtime.pkg"/>
+  </target>
+
+  <target name="create-mpkg">
+    <!-- create single pkgs -->
+    <antcall target="create-runtime-pkg" />
+    <antcall target="create-apperver-pkg" />
+
+    
+
+  </target>
+
+</project>
