@@ -77,6 +77,8 @@
     <get src="${appserver.apps.example.url}" dest="${target.dir}/appserver-${appserver.src.version}/deploy/example.phar" />
     <!-- create the .dodeploy files -->
     <touch file="${target.dir}/appserver-${appserver.src.version}/deploy/example.phar.dodeploy" />
+    <!-- make the install scripts executable -->
+    <chmod perm="755" dir="${basedir}/scripts" includes="*"/>
     <!-- build sub pkg for osx -->
     <exec dir="${basedir}" executable="pkgbuild">
       <arg value="--root"/>
