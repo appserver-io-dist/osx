@@ -1,30 +1,34 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<installer-script authoringTool="Packages" authoringToolVersion="1.1.2" authoringToolBuild="2B104" minSpecVersion="1.0">
-    <options/>
+<installer-script authoringTool="appserver-io-dist" authoringToolVersion="0.1.0" authoringToolBuild="1" minSpecVersion="1.0">
+    <options rootVolumeOnly="true"/>
     <installation-check script="installation_check()"/>
     <!--+==========================+
         |       Presentation       |
         +==========================+-->
-    <title>DISTRIBUTION_TITLE</title>
-    <background file="background" scaling="none" alignment="center"/>
+    <title>appserver.io ${appserver.src.version}</title>
+    <background file="background.png" scaling="none" alignment="center"/>
+    <welcome file="welcome.rtf"/>
+    <readme file="readme.rtf"/>
+    <license file="license.rtf"/>
+    <conclusion file="conclusion.rtf"/>
     <!--+==========================+
         |         Installer        |
         +==========================+-->
     <choices-outline>
-        <line choice="installer_choice_1"/>
-        <line choice="installer_choice_2"/>
+        <line choice="installer_choice_1_runtime"/>
+        <line choice="installer_choice_2_appserver"/>
     </choices-outline>
-    <choice id="installer_choice_1" title="appserver-1.0.0-alpha.97.mac.x86_64" description="">
-        <pkg-ref id="com.techdivision.appserver"/>
+    <choice id="installer_choice_1_runtime" title="appserver-io-php.runtime" description="Multithreaded PHP runtime environment">
+        <pkg-ref id="com.techdivision.appserver-io-php.runtime"/>
     </choice>
-    <choice id="installer_choice_2" title="appserver" description="">
-        <pkg-ref id="com.techdivision.pkg.appserver"/>
+    <choice id="installer_choice_2_appserver" title="appserver-io.appserver" description="appserver.io - PHP application server">
+        <pkg-ref id="com.techdivision.appserver-io.appserver"/>
     </choice>
     <!--+==========================+
         |    Package References    |
         +==========================+-->
-    <pkg-ref id="com.techdivision.pkg.appserver" version="1.0" auth="Root" installKBytes="0">file:./Contents/Packages/appserver.pkg</pkg-ref>
-    <pkg-ref id="com.techdivision.appserver" version="1.0.0" auth="Root" installKBytes="170567">file:./Contents/Packages/appserver-1.0.0-alpha.97.mac.x86_64.pkg</pkg-ref>
+    <pkg-ref id="com.techdivision.appserver-io-php.runtime" version="${appserver.runtime.version}" auth="Root">file:./build/appserver-io-php.runtime.pkg</pkg-ref>
+    <pkg-ref id="com.techdivision.appserver-io.appserver" version="${appserver.src.version}" auth="Root">file:./build/appserver-io.appserver.pkg</pkg-ref>
     <!--+==========================+
         |    JavaScript Scripts    |
         +==========================+-->
@@ -40,18 +44,18 @@
 	function IC_CheckOS(inDiskType,inMustBeInstalled,inMinimumVersion,inDistributionType)
 	{
 		var tOSVersion=undefined;
-		
+
 		/* Check Minimum Version */
-		
+
 		if (inDiskType==IC_DISK_TYPE_DESTINATION)
 		{
 			if (my.target.systemVersion!=undefined)
 			{
 				tOSVersion=my.target.systemVersion.ProductVersion;
 			}
-			
+
 			/* Check if no OS is installed on the potential target */
-			
+
 			if (tOSVersion==undefined)
 			{
 				return (inMustBeInstalled==false);
@@ -61,18 +65,18 @@
 		{
 			tOSVersion=system.version.ProductVersion;
 		}
-		
+
 		if (system.compareVersions(tOSVersion,inMinimumVersion)==-1)
 		{
 			return false;
 		}
-		
+
 		/* Check Distribution Type */
-		
+
 		if (inDistributionType!=IC_OS_DISTRIBUTION_TYPE_ANY)
 		{
 			var tIsServer;
-			
+
 			if (system.compareVersions(tOSVersion,'10.8.0')==-1)
 			{
 				if (inDiskType==IC_DISK_TYPE_DESTINATION)
@@ -95,18 +99,18 @@
 					tIsServer=system.files.fileExistsAtPath('/Applications/Server.app');
 				}
 			}
-			
+
 			if (inDistributionType==IC_OS_DISTRIBUTION_TYPE_CLIENT &amp;&amp; tIsServer==true)
 			{
 				return false;
 			}
-			
+
 			if (inDistributionType==IC_OS_DISTRIBUTION_TYPE_SERVER &amp;&amp; tIsServer==false)
 			{
 				return false;
 			}
 		}
-		
+
 		return true;
 	}
 
@@ -114,7 +118,7 @@
 	{
 		var tResult;
 
-		tResult=IC_CheckOS(IC_DISK_TYPE_STARTUP_DISK,true,'10.5',IC_OS_DISTRIBUTION_TYPE_ANY);
+		tResult=IC_CheckOS(IC_DISK_TYPE_STARTUP_DISK,true,'10.8',IC_OS_DISTRIBUTION_TYPE_ANY);
 
 		if (tResult==false)
 		{

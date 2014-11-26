@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# Stop the services if exists
+/opt/appserver/sbin/appserverctl stop
+/opt/appserver/sbin/appserver-watcherctl stop
+/opt/appserver/sbin/appserver-php5-fpmctl stop
+
+exit 0

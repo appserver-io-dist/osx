@@ -1,0 +1,113 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1343\cocoasubrtf160
+{\fonttbl\f0\fnil\fcharset0 HelveticaNeue;}
+{\colortbl;\red255\green255\blue255;\red38\green38\blue38;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720
+
+\f0\b\fs36 \cf2 \expnd0\expndtw0\kerning0
+Basic Usage
+\b0\fs24 \cf2 \expnd0\expndtw0\kerning0
+\
+\
+The appserver will automatically start after your installation wizard (or package manager) finishes the setup. You can use it without limitations from now on.\
+\
+Below you can find basic instructions on how to make use of the appserver. After the installation you might want to have a look and some of the bundled apps. Two of are interesting in particular:\
+\
+Example shows basic usage of services. You can reach it at 
+\b \cf2 \expnd0\expndtw0\kerning0
+http://127.0.0.1:9080/example
+\b0 \cf2 \expnd0\expndtw0\kerning0
+\
+\
+Start your favorite browser and have a look at what we can do. :)\
+To pass the password barriers use the default login appserver/appserver.i0.\
+\
+You will see that we provide basic frontend implementations of services the appserver runtime provides. If you want to use these services yourself you should have a look into the code of our apps and read about app development\
+\
+You might be curious about the different port we use. Per default the appserver will open several ports at which it's services are available. As we do not want to block (or be blocked by) other services we use ports of a higher range.\
+\
+As a default we use the following ports:\
+\
+
+\b \cf2 \expnd0\expndtw0\kerning0
+WebContainer
+\b0 \cf2 \expnd0\expndtw0\kerning0
+\
+Http-Server: 
+\b \cf2 \expnd0\expndtw0\kerning0
+9080
+\b0 \cf2 \expnd0\expndtw0\kerning0
+\
+Https-Server: 
+\b \cf2 \expnd0\expndtw0\kerning0
+9443
+\b0 \cf2 \expnd0\expndtw0\kerning0
+\
+WebSocketServer: 
+\b \cf2 \expnd0\expndtw0\kerning0
+8589\
+\pard\pardeftab720
+
+\b0 \cf2 \expnd0\expndtw0\kerning0
+\
+\pard\pardeftab720
+
+\b \cf2 \expnd0\expndtw0\kerning0
+Persistence-MQ-Container
+\b0 \cf2 \expnd0\expndtw0\kerning0
+\
+PersistenceServer: 
+\b \cf2 \expnd0\expndtw0\kerning0
+8585
+\b0 \cf2 \expnd0\expndtw0\kerning0
+\
+PersistenceServer: 
+\b \cf2 \expnd0\expndtw0\kerning0
+8587\
+\pard\pardeftab720
+
+\b0 \cf2 \expnd0\expndtw0\kerning0
+\
+\pard\pardeftab720
+
+\b \cf2 \expnd0\expndtw0\kerning0
+LemCacheContainer
+\b0 \cf2 \expnd0\expndtw0\kerning0
+\
+MemcacheServer: 
+\b \cf2 \expnd0\expndtw0\kerning0
+11210
+\b0 \cf2 \expnd0\expndtw0\kerning0
+\
+\
+You can change this default port mapping by using the configuration file. If you are interested in our naming, you can see our container->server pattern, you might want to have a deeper look into our architecture\
+\
+Start and Stop Scripts\
+Together with the appserver we deliver several standalone processes which we need for proper functioning of different features.\
+\
+For these processes we provide start and stop scripts for all *nix like operating systems. These work the way they normally would on the regarding system. They are:\
+\
+
+\b \cf2 \expnd0\expndtw0\kerning0
+appservercrt:
+\b0 \cf2 \expnd0\expndtw0\kerning0
+ The main process which will start the appserver itself\
+\
+
+\b \cf2 \expnd0\expndtw0\kerning0
+appserver-php5-fpm
+\b0 \cf2 \expnd0\expndtw0\kerning0
+: php-fpm + appserver configuration. Our default FastCGI backend. Others might be added the same way\
+\
+
+\b \cf2 \expnd0\expndtw0\kerning0
+appserver-watchercrl
+\b0 \cf2 \expnd0\expndtw0\kerning0
+: A watchdog which monitors filesystem changes and manages appserver restarts\
+\
+On a normal system all three of these processes should run to enable the full feature set. To ultimately run the appserver only the appserver process is needed but you will miss simple on-the-fly deployment (appserver-watcher) and might have problems with legacy applications. Depending on the FastCGI Backend you want to use you might ditch appserver-php5-fpm for other processes e.g. supplying you with a hhvm backend.\
+\
+Currently we support three different types of init scripts which support the commands start, stop, status and restart (additional commands migth be available on other systems).\
+\
+Mac OS X (LAUNCHD) The LAUNCHD launch daemons are located within the appserver installation at /opt/appserver/sbin. They can be used with the schema /opt/appserver/sbin/<DAEMON> <COMMAND>}

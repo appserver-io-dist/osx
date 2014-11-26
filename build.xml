@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!DOCTYPE project>
-<project name="appserver-io/appserver" basedir=".">
+<project name="appserver-io/appserver" basedir="." default="build">
 
   <property environment="env" />
 
@@ -15,18 +15,16 @@
   <property name="target.dir" value="${basedir}/target" />
   <property name="build.dir" value="${basedir}/build" />
   <property name="temp.dir" value="/tmp" />
-  <property name="runtime.dir" value="/opt/appserver" />
-
-  <property name="package.name" value="appserver-io.appserver.pkg" />
 
   <target name="clean">
-    <delete dir="${target.dir}" includeemptydirs="true" quiet="false" verbose="true" failonerror="true"/>
-    <delete dir="${build.dir}" includeemptydirs="true" quiet="false" verbose="true" failonerror="true"/>
+    <delete dir="${target.dir}" includeemptydirs="true" quiet="false" verbose="false" failonerror="true"/>
+    <delete dir="${build.dir}" includeemptydirs="true" quiet="false" verbose="false" failonerror="true"/>
   </target>
 
   <target name="prepare" depends="clean">
     <mkdir dir="${target.dir}" />
     <mkdir dir="${build.dir}" />
+    <antcall target="install-composer" />
   </target>
 
   <target name="copy" depends="prepare">
@@ -34,45 +32,66 @@
       <fileset dir="${src.dir}">
         <include name="**/*" />
       </fileset>
+      <filterchain>
+        <expandproperties/>
+      </filterchain>
     </copy>
   </target>
 
-  <target name="create-appserver-pkg" depends="copy">
+  <target name="install-composer">
+    <get src="https://getcomposer.org/installer" dest="${target.dir}/composer-installer" />
+    <exec dir="${target.dir}" executable="php">
+      <arg value="composer-installer" />
+    </exec>
+  </target>
+
+  <target name="create-appserver-pkg">
     <!-- get appserver sources in specific version -->
     <get src="${appserver.src.url}" dest="${temp.dir}/appserver-src-${appserver.src.version}.zip" />
     <!-- unzip to target dir -->
     <unzip src="${temp.dir}/appserver-src-${appserver.src.version}.zip" dest="${target.dir}" />
     <!-- install dependencies via composer and let postinstall-scripts proceed -->
-    <exec dir="${target.dir}/appserver-${appserver.src.version}" executable="${runtime.dir}/bin/php">
-      <arg line="${runtime.dir}/bin/composer.phar install"/>
+    <exec dir="${target.dir}/appserver-${appserver.src.version}" executable="php">
+      <arg line="${target.dir}/composer.phar install --prefer-dist --quiet --no-interaction --ignore-platform-reqs"/>
     </exec>
     <!-- deploy example app by putting it into deploy folder of runtime -->
     <get src="${appserver.apps.example.url}" dest="${target.dir}/appserver-${appserver.src.version}/deploy" />
-    <!-- build pkg for osx -->
+    <!-- build sub pkg for osx -->
     <exec dir="${basedir}" executable="pkgbuild">
       <arg value="--root"/>
       <arg value="${target.dir}/appserver-${appserver.src.version}"/>
+      <arg value="--scripts"/>
+      <arg value="${basedir}/scripts"/>
       <arg value="--install-location"/>
       <arg value="/opt/appserver"/>
       <arg value="--version"/>
       <arg value="${appserver.src.version}"/>
       <arg value="--identifier"/>
       <arg value="com.techdivision.appserver-io.appserver"/>
-      <arg value="${build.dir}/${package.name}"/>
+      <arg value="${build.dir}/appserver-io.appserver.pkg"/>
     </exec>
   </target>
 
   <target name="create-runtime-pkg">
     <!-- @todo: download runtime tar.get and build a pkg like appserver-src -->
     <get src="${appserver.runtime.url}" dest="${build.dir}/appserver-io-php.runtime.pkg"/>
+    <!-- build sub pkg for osx -->
   </target>
 
-  <target name="create-mpkg">
+  <target name="build" depends="copy">
     <!-- create single pkgs -->
     <antcall target="create-runtime-pkg" />
-    <antcall target="create-apperver-pkg" />
-
-    
+    <antcall target="create-appserver-pkg" />
+    <!-- build pkg for osx -->
+    <exec dir="${basedir}" executable="productbuild">
+      <arg value="--distribution"/>
+      <arg value="${target.dir}/distribution.xml"/>
+      <arg value="--package-path"/>
+      <arg value="${basedir}/build"/>
+      <arg value="--resources"/>
+      <arg value="${basedir}/resources"/>
+      <arg value="${build.dir}/appserver-io-${appserver.src.version}.mpkg"/>
+    </exec>
 
   </target>
 
