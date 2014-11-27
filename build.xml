@@ -18,36 +18,36 @@
   <property name="src.dir" value="${basedir}/src" />
   <property name="target.dir" value="${basedir}/target" />
   <property name="build.dir" value="${basedir}/build" />
-  <property name="temp.dir" value="/tmp" />
+  <property name="temp.dir" value="${basedir}/tmp" />
 
   <!-- ==================================================================== -->
-  <!-- Cleans the target and build directories                              -->
+  <!-- Cleans the target directories                                        -->
   <!-- ==================================================================== -->
   <target name="clean">
     <delete dir="${target.dir}" includeemptydirs="true" quiet="false" verbose="false" failonerror="true"/>
+    <delete dir="${temp.dir}" includeemptydirs="true" quiet="false" verbose="false" failonerror="true"/>
+  </target>
+
+  <!-- ==================================================================== -->
+  <!-- Cleans the build directories                                         -->
+  <!-- ==================================================================== -->
+  <target name="clean-build">
     <delete dir="${build.dir}" includeemptydirs="true" quiet="false" verbose="false" failonerror="true"/>
+  </target>
+
+  <!-- ==================================================================== -->
+  <!-- Prepares the target dir                                              -->
+  <!-- ==================================================================== -->
+  <target name="prepare" depends="clean">
+    <mkdir dir="${target.dir}" />
+    <mkdir dir="${temp.dir}" />
   </target>
 
   <!-- ==================================================================== -->
   <!-- Prepares the build environment                                       -->
   <!-- ==================================================================== -->
-  <target name="prepare" depends="clean">
-    <mkdir dir="${target.dir}" />
+  <target name="prepare-build" depends="clean-build">
     <mkdir dir="${build.dir}" />
-  </target>
-
-  <!-- ==================================================================== -->
-  <!-- Copies source files to target dir and expand properties              -->
-  <!-- ==================================================================== -->
-  <target name="copy" depends="prepare">
-    <copy todir="${target.dir}" preservelastmodified="true" overwrite="true">
-      <fileset dir="${src.dir}">
-        <include name="**/*" />
-      </fileset>
-      <filterchain>
-        <expandproperties/>
-      </filterchain>
-    </copy>
   </target>
 
   <!-- ==================================================================== -->
@@ -63,7 +63,7 @@
   <!-- ==================================================================== -->
   <!-- Prepares the appserver sources                                       -->
   <!-- ==================================================================== -->
-  <target name="prepare-appserver-src">
+  <target name="prepare-appserver-source" depends="prepare">
     <!-- install local composer -->
     <antcall target="install-composer" />
     <!-- get appserver sources in specific version -->
@@ -83,41 +83,102 @@
   <!-- ==================================================================== -->
   <!-- Creates a .pkg package for the appserver sources                     -->
   <!-- ==================================================================== -->
-  <target name="create-appserver-pkg" depends="prepare-appserver-src">
+  <target name="create-appserver-source-pkg" depends="prepare-appserver-source">
+    <!-- copy packaging build files to target -->
+    <copy todir="${target.dir}">
+      <fileset dir="${src.dir}/source">
+        <include name="**/*"/>
+      </fileset>
+    </copy>
     <!-- make the install scripts executable -->
-    <chmod perm="755" dir="${basedir}/scripts" includes="*"/>
+    <chmod perm="755" dir="${target.dir}/scripts" includes="*"/>
     <!-- build sub pkg for osx -->
     <exec dir="${basedir}" executable="pkgbuild">
       <arg value="--root"/>
       <arg value="${target.dir}/appserver-${appserver.src.version}"/>
       <arg value="--scripts"/>
-      <arg value="${basedir}/scripts"/>
+      <arg value="${target.dir}/scripts"/>
       <arg value="--install-location"/>
       <arg value="/opt/appserver"/>
       <arg value="--version"/>
       <arg value="${appserver.src.version}"/>
       <arg value="--identifier"/>
-      <arg value="com.techdivision.appserver-io.appserver"/>
-      <arg value="${build.dir}/appserver-io.appserver-${appserver.src.version}.pkg"/>
+      <arg value="com.techdivision.appserver-io.source"/>
+      <arg value="${build.dir}/${build.name.prefix}source-${appserver.src.version}${build.name.suffix}.${build.name.ext}"/>
     </exec>
   </target>
 
   <!-- ==================================================================== -->
   <!-- Creates a .pkg package for the appserver runtime                     -->
   <!-- ==================================================================== -->
-  <target name="create-runtime-pkg">
-    <!-- @todo: download runtime tar.get and build a pkg like appserver-src -->
-    <get src="${appserver.runtime.url}" dest="${build.dir}/appserver-io-php.runtime-${appserver.runtime.version}.pkg"/>
-    <!-- build sub pkg instead of download it -->
+  <target name="create-appserver-runtime-pkg" depends="prepare">
+    <!-- get runtime in specific version as tar.gz -->
+    <get src="${appserver.runtime.url}" dest="${temp.dir}/${build.name.prefix}runtime-${appserver.runtime.version}${build.name.suffix}.tar.gz"/>
+    <mkdir dir="${target.dir}/runtime/opt" />
+    <exec executable="tar">
+      <arg value="-xzf"/>
+      <arg value="${temp.dir}/${build.name.prefix}runtime-${appserver.runtime.version}${build.name.suffix}.tar.gz"/>
+      <arg value="-p"/>
+      <arg value="-C"/>
+      <arg value="${target.dir}/runtime/opt"/>
+    </exec>
+    <!-- copy packaging build files to target -->
+    <copy todir="${target.dir}">
+      <fileset dir="${src.dir}/runtime">
+        <include name="**/*"/>
+      </fileset>
+    </copy>
+    <!-- make the install scripts executable -->
+    <chmod perm="755" dir="${target.dir}/scripts" includes="*"/>
+    <!-- build sub pkg for osx -->
+    <exec dir="${basedir}" executable="pkgbuild">
+      <arg value="--root"/>
+      <arg value="${target.dir}/runtime"/>
+      <arg value="--scripts"/>
+      <arg value="${target.dir}/scripts"/>
+      <arg value="--install-location"/>
+      <arg value="/"/>
+      <arg value="--version"/>
+      <arg value="${appserver.runtime.version}"/>
+      <arg value="--identifier"/>
+      <arg value="com.techdivision.appserver-io.runtime"/>
+      <arg value="${build.dir}/${build.name.prefix}runtime-${appserver.runtime.version}${build.name.suffix}.${build.name.ext}"/>
+    </exec>
+  </target>
+
+  <!-- ==================================================================== -->
+  <!-- Copies any built package to the snapshot hosting server.             -->
+  <!-- ==================================================================== -->
+  <target name="upload-builds" description="Uploads any built package to the file-server.">
+    <echo message="Now try to upload all builds to file-server"/>
+    <exec executable="scp" failonerror="true">
+      <arg line="-o StrictHostKeyChecking=no -i ${user.home}/.ssh/id_rsa ${build.dir}/* ${build.server.user}@${build.server.host}:${build.server.upload-path}"/>
+    </exec>
   </target>
 
   <!-- ==================================================================== -->
   <!-- Creates the distribution package *.mpkg with everything included     -->
   <!-- ==================================================================== -->
-  <target name="build" depends="copy">
+  <target name="build" depends="prepare-build">
     <!-- create single pkgs -->
-    <antcall target="create-runtime-pkg" />
-    <antcall target="create-appserver-pkg" />
+    <antcall target="create-appserver-source-pkg" />
+    <antcall target="create-appserver-runtime-pkg" />
+    <antcall target="prepare" />
+    <!-- copy packaging build files to target -->
+    <copy todir="${target.dir}">
+      <fileset dir="${src.dir}/dist">
+        <include name="**/*"/>
+        <exclude name="distribution.xml"/>
+      </fileset>
+    </copy>
+    <copy todir="${target.dir}">
+      <fileset dir="${src.dir}/dist">
+        <include name="distribution.xml"/>
+      </fileset>
+      <filterchain>
+        <expandproperties/>
+      </filterchain>
+    </copy>
     <!-- build pkg for osx -->
     <exec dir="${basedir}" executable="productbuild">
       <arg value="--distribution"/>
@@ -125,9 +186,11 @@
       <arg value="--package-path"/>
       <arg value="${basedir}/build"/>
       <arg value="--resources"/>
-      <arg value="${basedir}/resources"/>
-      <arg value="${build.dir}/appserver-io-${appserver.src.version}.mpkg"/>
+      <arg value="${target.dir}/resources"/>
+      <arg value="${build.dir}/${build.name.prefix}dist-${appserver.src.version}.${build.number}${build.name.suffix}.${build.name.ext}"/>
     </exec>
+    <!-- upload stuff to builds file-server -->
+    <antcall target="upload-builds"/>
   </target>
 
 </project>

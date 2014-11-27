@@ -1,4 +1,7 @@
-/build
 /target
+/tmp
+/build
+/.idea
 .DS_Store
-
+._.DS_Store
+build.properties
