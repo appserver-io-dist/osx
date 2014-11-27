@@ -18,17 +18,17 @@
         <line choice="installer_choice_1_runtime"/>
         <line choice="installer_choice_2_appserver"/>
     </choices-outline>
-    <choice id="installer_choice_1_runtime" title="appserver-io-php.runtime" description="Multithreaded PHP runtime environment">
-        <pkg-ref id="com.techdivision.appserver-io-php.runtime"/>
+    <choice id="installer_choice_1_runtime" title="appserver-io.runtime" description="Multithreaded PHP runtime environment">
+        <pkg-ref id="com.techdivision.appserver-io.runtime"/>
     </choice>
-    <choice id="installer_choice_2_appserver" title="appserver-io.appserver" description="appserver.io - PHP application server">
-        <pkg-ref id="com.techdivision.appserver-io.appserver"/>
+    <choice id="installer_choice_2_appserver" title="appserver-io.source" description="appserver.io - PHP application server">
+        <pkg-ref id="com.techdivision.appserver-io.source"/>
     </choice>
     <!--+==========================+
         |    Package References    |
         +==========================+-->
-    <pkg-ref id="com.techdivision.appserver-io-php.runtime" version="${appserver.runtime.version}" auth="Root">file:./build/appserver-io-php.runtime-${appserver.runtime.version}.pkg</pkg-ref>
-    <pkg-ref id="com.techdivision.appserver-io.appserver" version="${appserver.src.version}" auth="Root">file:./build/appserver-io.appserver-${appserver.src.version}.pkg</pkg-ref>
+    <pkg-ref id="com.techdivision.appserver-io.runtime" version="${appserver.runtime.version}" auth="Root">file:./build/${build.name.prefix}runtime-${appserver.runtime.version}${build.name.suffix}.${build.name.ext}</pkg-ref>
+    <pkg-ref id="com.techdivision.appserver-io.source" version="${appserver.src.version}" auth="Root">file:./build/${build.name.prefix}source-${appserver.src.version}${build.name.suffix}.${build.name.ext}</pkg-ref>
     <!--+==========================+
         |    JavaScript Scripts    |
         +==========================+-->
