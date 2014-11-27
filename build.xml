@@ -189,8 +189,6 @@
       <arg value="${target.dir}/resources"/>
       <arg value="${build.dir}/${build.name.prefix}dist-${appserver.src.version}.${build.number}${build.name.suffix}.${build.name.ext}"/>
     </exec>
-    <!-- upload stuff to builds file-server -->
-    <antcall target="upload-builds"/>
   </target>
 
 </project>
