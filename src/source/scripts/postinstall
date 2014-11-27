@@ -1,9 +1,9 @@
 #!/bin/sh
 
 # Set needed files as accessable for the configured user
-chown -R nobody:staff /opt/appserver/var
-chown -R nobody:staff /opt/appserver/webapps
-chown -R nobody:staff /opt/appserver/deploy
+chown -R _www:staff /opt/appserver/var
+chown -R _www:staff /opt/appserver/webapps
+chown -R _www:staff /opt/appserver/deploy
 
 # run postinstall script from appserver-io/appserver composer package
 # to set correct path for specific startup scripts
