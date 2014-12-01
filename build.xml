@@ -7,7 +7,7 @@
 
   <!-- Generate a timestamp to time.stamp property -->
   <tstamp>
-    <format property="time.stamp" pattern="yyyy-MM-dd_HHmmss"/>
+    <format property="time.stamp" pattern="yyyy-MM-dd-HHmmss"/>
   </tstamp>
 
   <!-- Readin build property files -->
@@ -66,18 +66,36 @@
   <target name="prepare-appserver-source" depends="prepare">
     <!-- install local composer -->
     <antcall target="install-composer" />
-    <!-- get appserver sources in specific version -->
-    <get src="${appserver.src.url}" dest="${temp.dir}/appserver-src-${appserver.src.version}.zip" />
-    <!-- unzip to target dir -->
-    <unzip src="${temp.dir}/appserver-src-${appserver.src.version}.zip" dest="${target.dir}" />
+    <!-- clone appserver src -->
+    <exec dir="${temp.dir}" executable="git">
+      <arg line="clone https://${github.oauth.token}:x-oauth-basic@github.com/${appserver.src.repo} appserver-src" />
+    </exec>
+    <!-- get lastest tag version -->
+    <exec dir="${temp.dir}/appserver-src" executable="git" outputProperty="appserver.src.git.tag">
+      <arg line="describe --abbrev=0 --tags" />
+    </exec>
+    <property name="appserver.src.version" value="${appserver.src.git.tag}" />
+    <!-- checkout lastest tag version -->
+    <echo message="Checkout lastest tag version ${appserver.src.version}" />
+    <exec dir="${temp.dir}/appserver-src" executable="git">
+      <arg line="checkout -q ${appserver.src.version}" />
+    </exec>
+    <!-- move to target.dir -->
+    <move todir="${target.dir}/src/opt/appserver">
+      <fileset dir="${temp.dir}/appserver-src"/>
+    </move>
+    <!-- remove git db files -->
+    <delete dir="${target.dir}/src/opt/appserver/.git" includeemptydirs="true" />
     <!-- install dependencies via composer and let postinstall-scripts proceed -->
-    <exec dir="${target.dir}/appserver-${appserver.src.version}" executable="php">
+    <exec dir="${target.dir}/src/opt/appserver" executable="php">
       <arg line="${temp.dir}/composer.phar install --prefer-dist --quiet --no-interaction --ignore-platform-reqs"/>
     </exec>
+    <!-- create deploy folder if not exists -->
+    <mkdir dir="${target.dir}/src/opt/appserver/deploy"/>
     <!-- deploy example app by putting it into deploy folder of runtime -->
-    <get src="${appserver.apps.example.url}" dest="${target.dir}/appserver-${appserver.src.version}/deploy/example.phar" />
+    <get src="${appserver.apps.example.url}" dest="${target.dir}/src/opt/appserver/deploy/example.phar" />
     <!-- create the .dodeploy files -->
-    <touch file="${target.dir}/appserver-${appserver.src.version}/deploy/example.phar.dodeploy" />
+    <touch file="${target.dir}/src/opt/appserver/deploy/example.phar.dodeploy" />
   </target>
 
   <!-- ==================================================================== -->
@@ -95,11 +113,11 @@
     <!-- build sub pkg for osx -->
     <exec dir="${basedir}" executable="pkgbuild">
       <arg value="--root"/>
-      <arg value="${target.dir}/appserver-${appserver.src.version}"/>
+      <arg value="${target.dir}/src/"/>
       <arg value="--scripts"/>
       <arg value="${target.dir}/scripts"/>
       <arg value="--install-location"/>
-      <arg value="/opt/appserver"/>
+      <arg value="/"/>
       <arg value="--version"/>
       <arg value="${appserver.src.version}"/>
       <arg value="--identifier"/>
@@ -160,11 +178,7 @@
   <!-- ==================================================================== -->
   <!-- Creates the distribution package *.mpkg with everything included     -->
   <!-- ==================================================================== -->
-  <target name="build" depends="prepare-build">
-    <!-- create single pkgs -->
-    <antcall target="create-appserver-source-pkg" />
-    <antcall target="create-appserver-runtime-pkg" />
-    <antcall target="prepare" />
+  <target name="build" depends="prepare-build, create-appserver-source-pkg, create-appserver-runtime-pkg, prepare">
     <!-- copy packaging build files to target -->
     <copy todir="${target.dir}">
       <fileset dir="${src.dir}/dist">
