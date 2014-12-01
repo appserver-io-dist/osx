@@ -5,7 +5,7 @@
     <!--+==========================+
         |       Presentation       |
         +==========================+-->
-    <title>appserver.io ${appserver.src.version}</title>
+    <title>appserver.io ${appserver.src.version}.${build.number}</title>
     <background file="background.png" scaling="none" alignment="center"/>
     <welcome file="welcome.rtf"/>
     <readme file="readme.rtf"/>
