@@ -1,9 +1,7 @@
 #!/bin/sh
 
-# Set needed files as accessable for the configured user
-chown -R _www:staff /opt/appserver/var
-chown -R _www:staff /opt/appserver/webapps
-chown -R _www:staff /opt/appserver/deploy
+# Setup appserver by calling server.php with -s install to trigger install mode setup
+/opt/appserver/server.php -s install
 
 # run postinstall script from appserver-io/appserver composer package
 # to set correct path for specific startup scripts
