@@ -1,7 +1,8 @@
 #!/bin/sh
 
 # Setup appserver by calling server.php with -s install to trigger install mode setup
-/opt/appserver/server.php -s install
+cd /opt/appserver
+./server.php -s install
 
 # Start the services
 /opt/appserver/sbin/appserverctl start
