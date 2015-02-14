@@ -5,7 +5,7 @@
     <!--+==========================+
         |       Presentation       |
         +==========================+-->
-    <title>appserver.io ${appserver.src.version}.${build.number}</title>
+    <title>appserver.io ${VERSION_NAME}</title>
     <background file="background.png" scaling="none" alignment="center"/>
     <welcome file="welcome.rtf"/>
     <readme file="readme.rtf"/>
@@ -27,8 +27,8 @@
     <!--+==========================+
         |    Package References    |
         +==========================+-->
-    <pkg-ref id="com.techdivision.appserver-io.runtime" version="${appserver.runtime.version}" auth="Root">file:./build/${build.name.prefix}runtime-${appserver.runtime.version}${build.name.suffix}.${build.name.ext}</pkg-ref>
-    <pkg-ref id="com.techdivision.appserver-io.source" version="${appserver.src.version}" auth="Root">file:./build/${build.name.prefix}source-${appserver.src.version}${build.name.suffix}.${build.name.ext}</pkg-ref>
+    <pkg-ref id="com.techdivision.appserver-io.runtime" version="${appserver.runtime.version}" auth="Root">file:./build/${RUNTIME_DIST_PACKAGE_NAME}</pkg-ref>
+    <pkg-ref id="com.techdivision.appserver-io.source" version="${appserver.src.version}" auth="Root">file:./build/${SOURCE_PACKAGE_NAME}</pkg-ref>
     <!--+==========================+
         |    JavaScript Scripts    |
         +==========================+-->
