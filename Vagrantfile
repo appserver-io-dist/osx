@@ -33,6 +33,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Extend the timeout for initial connection
   config.vm.boot_timeout = 600
+  config.ssh.insert_key = false
 
   config.vm.provider "virtualbox" do |vb|
     host = RbConfig::CONFIG['host_os']
