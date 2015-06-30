@@ -28,6 +28,7 @@
     <property name="build.dir" value="${basedir}/build" />
     <property name="tests.dir" value="${basedir}/tests" />
     <property name="temp.dir" value="${basedir}/tmp" />
+    <property name="temp.mount.dir" value="${temp.dir}/mount" />
     <property name="reports.dir" value="${basedir}/reports" />
 
     <!-- ==================================================================== -->
@@ -53,11 +54,19 @@
     <import file="${package.dir}/common.xml" optional="true" />
 
     <!-- ==================================================================== -->
+    <!-- Cleans the directory used to copy in build files                     -->
+    <!-- ==================================================================== -->
+    <target name="clean-mount">
+        <delete dir="${temp.mount.dir}" includeemptydirs="true" quiet="false" verbose="false" failonerror="true"/>
+    </target>
+
+    <!-- ==================================================================== -->
     <!-- Cleans the target directories                                        -->
     <!-- ==================================================================== -->
     <target name="clean">
         <delete dir="${target.dir}" includeemptydirs="true" quiet="false" verbose="false" failonerror="true"/>
         <delete dir="${temp.dir}" includeemptydirs="true" quiet="false" verbose="false" failonerror="true"/>
+        <delete dir="${temp.mount.dir}" includeemptydirs="true" quiet="false" verbose="false" failonerror="true"/>
     </target>
 
     <!-- ==================================================================== -->
@@ -76,6 +85,16 @@
         <delete includeemptydirs="true" quiet="false" verbose="false" failonerror="true">
             <fileset dir="${reports.dir}" includes="**/*"/>
         </delete>
+    </target>
+
+    <!-- ==================================================================== -->
+    <!-- Prepares the directoy used to mount from the vagrant box             -->
+    <!-- ==================================================================== -->
+    <target name="prepare-mount" depends="clean-mount">
+        <mkdir dir="${temp.mount.dir}" />
+        <mkdir dir="${temp.mount.dir}/reports" />
+        <mkdir dir="${temp.mount.dir}/build" />
+        <mkdir dir="${temp.mount.dir}/src" />
     </target>
 
     <!-- ==================================================================== -->
@@ -138,6 +157,99 @@
         <echo message="Now starting publish cycle"/>
         <!-- upload the build artifacts to the snapshot hub -->
         <antcall target="copy-to-hub" />
+    </target>
+
+    <!-- ==================================================================== -->
+    <!-- Will prepare a mount point for the AFP mount of the build data       -->
+    <!-- ==================================================================== -->
+    <target name="prepare-build-mounts" depends="prepare-mount">
+        <!-- trying to mount the needed directories -->
+        <exec dir="${temp.mount.dir}" executable="mount_afp">
+            <arg line="'afp://${vagrant.user.name}:${vagrant.user.password}@127.0.0.1:${vagrant.afp.local-port}/vagrant' '${temp.mount.dir}'" />
+        </exec>
+        <exec dir="${temp.mount.dir}" executable="mount_afp">
+            <arg line="'afp://${vagrant.user.name}:${vagrant.user.password}@127.0.0.1:${vagrant.afp.local-port}/vagrant/build' '${temp.mount.dir}/build'" />
+        </exec>
+        <exec dir="${temp.mount.dir}" executable="mount_afp">
+            <arg line="'afp://${vagrant.user.name}:${vagrant.user.password}@127.0.0.1:${vagrant.afp.local-port}/vagrant/reports' '${temp.mount.dir}/reports'" />
+        </exec>
+        <exec dir="${temp.mount.dir}" executable="mount_afp">
+            <arg line="'afp://${vagrant.user.name}:${vagrant.user.password}@127.0.0.1:${vagrant.afp.local-port}/vagrant/src' '${temp.mount.dir}/src'" />
+        </exec>
+        <!-- copy the build files into the mount -->
+        <copy todir="${temp.mount.dir}" failonerror="true">
+            <fileset dir="${temp.dir}">
+               <include name="*/**"/>
+               <exclude name="Vagrantfile"/>
+               <exclude name="provision.sh"/>
+            </fileset>
+        </copy>
+        <!-- prepare a tmp dir for work within the VM -->
+        <mkdir dir="${temp.mount.dir}/tmp" />
+    </target>
+
+    <!-- ==================================================================== -->
+    <!-- Will test if the targeted box is already up and running.             -->
+    <!-- Will set the properties "vagrant-box.running" or                     -->
+    <!-- "vagrant-box.not-running" depending on the result                    -->
+    <!-- ==================================================================== -->
+    <target name="test-vagrant-box-running">
+        <!-- issue the actual command -->
+        <exec dir="${temp.dir}" executable="vagrant" outputproperty="vagrant-box.status">
+            <arg value="status" />
+        </exec>
+        <parse-vagrant-box-status status="${vagrant-box.status}" boxname="${vagrant-box.name}" />
+        <condition property="vagrant-box.not-running">
+            <isset property="BOX_NOT_RUNNING"/>
+        </condition>
+        <condition property="vagrant-box.running">
+            <isset property="BOX_RUNNING"/>
+        </condition>
+    </target>
+
+    <!-- ==================================================================== -->
+    <!-- Will parse a vagrant box status to look for the "running" state.     -->
+    <!-- Will set BOX_RUNNING if found, BOX_NOT_RUNNING if otherwise          -->
+    <!-- ==================================================================== -->
+    <scriptdef name="parse-vagrant-box-status" language="javascript">
+        <attribute name="status"/>
+        <attribute name="boxname"/>
+        <![CDATA[
+            // getting the params
+            var status = attributes.get("status");
+            var boxName = attributes.get("boxname");
+            // check the occurence of a certain run indicator
+            if (status.indexOf(boxName + " running") > -1) {
+                project.setProperty("BOX_RUNNING", true);
+            } else {
+                project.setProperty("BOX_NOT_RUNNING", true);
+            }
+        ]]>
+    </scriptdef>
+
+    <!-- ==================================================================== -->
+    <!-- Will start a vagrant box within the tmp directory                    -->
+    <!-- ==================================================================== -->
+    <target name="start-vagrant-box" depends="test-vagrant-box-running" if="vagrant-box.not-running">
+        <!-- tell the user we need the box name first -->
+        <fail unless="vagrant-box.name" message="Please specify the type of box to start e.g. using 'ant start-vagrant-build-box'" />
+        <!-- issue the actual start command -->
+        <exec dir="${temp.dir}" executable="vagrant" errorproperty="vagrant-box.start.failed">
+            <arg line="up ${vagrant-box.name} --provider=${vagrant.provider} --destroy-on-error" />
+        </exec>
+        <!-- prepare the mount point -->
+        <antcall target="prepare-build-mounts" />
+        <!-- eliminate the possiblity of empty but existing error output -->
+        <property name="vagrant-box.start.failed" value=""/>
+        <condition property="fatal-error.occured" value="${vagrant-box.start.failed}">
+            <not>
+                <equals arg1="${vagrant-box.start.failed}" arg2=""/>
+            </not>
+        </condition>
+        <!-- check for a specific build failure and make an emergency destroy -->
+        <antcall target="destroy-vagrant-box-on-error" />
+        <!-- tell them about any failures we might encountered -->
+        <fail if="fatal-error.occured" message="Starting the vagrant box failed! Error message was: '${fatal-error.occured}', also see log above." />
     </target>
 
     <!-- ==================================================================== -->
