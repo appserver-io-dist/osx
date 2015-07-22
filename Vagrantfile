@@ -31,6 +31,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         # Extend the timeout for initial connection
         osx.vm.boot_timeout = 600
 
+        # Without guest additions we cannot change the insecure key
+        osx.ssh.insert_key = false
+
         # Make some provider specific configuration changes
         osx.vm.provider "virtualbox" do |vb|
             host = RbConfig::CONFIG['host_os']
