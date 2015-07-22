@@ -6,30 +6,39 @@ VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
-  # Box name and location
-  config.vm.box = "${vagrant-box.name}"
-  config.vm.box_url = "${vagrant-box.baseurl}/${vagrant-box.name}.box"
+    # Configure the actual windows machine
+    config.vm.define "${vagrant-box.name}" do |osx|
 
-  # Basic network configuration
-  config.vm.base_mac = "080027BE1722"
-  # Required for AFP to work, and AFP is required as Mac OSX is missing VB guest additions
-  config.vm.network "forwarded_port", host: ${vagrant.afp.local-port}, guest: 548
+        # Basic default configuration used for intial setup of box.
+        # Please use if packaged boxes are unavailable or unwelcome
+        # osx.vm.box = "chef/osx-${target-os.version}"
+        # osx.vm.box_url = "https://vagrantcloud.com/chef/boxes/osx-${target-os.version}"
 
-  # Block vagrant driven folder syncing
-  config.vm.synced_folder "${temp.dir}", "${vagrant.basedir}", disabled: true
+        # Box name and location
+        osx.vm.box = "${vagrant-box.name}"
+        osx.vm.box_url = "${vagrant-box.baseurl}/${vagrant-box.name}.box"
 
-  # Extend the timeout for initial connection
-  config.vm.boot_timeout = 600
-  config.ssh.insert_key = false
+        # Basic network configuration
+        osx.vm.host_name = "${vagrant-box.name}"
+        osx.vm.base_mac = "080027BE1722"
 
-  config.vm.provider "virtualbox" do |vb|
-    host = RbConfig::CONFIG['host_os']
+        # Share some needed folders
+        osx.vm.synced_folder "${temp.dir}", "${vagrant.basedir}", type: "rsync"
+        osx.vm.synced_folder "${build.dir}", "${vagrant-build.dir}", type: "rsync"
+        osx.vm.synced_folder "${reports.dir}", "${vagrant-reports.dir}", type: "rsync"
+        osx.vm.synced_folder "${src.dir}", "${vagrant-src.dir}", type: "rsync"
 
-    # Give VM 2Gb system memory & access to 2 cpu cores on the host
-    vb.cpus = 2
-    vb.memory = 2048
-  end
+        # Extend the timeout for initial connection
+        osx.vm.boot_timeout = 600
 
-  config.vm.define :"${vagrant-box.name}" do |t|
+        # Make some provider specific configuration changes
+        osx.vm.provider "virtualbox" do |vb|
+            host = RbConfig::CONFIG['host_os']
+
+            # Give VM 2Gb system memory & access to 2 cpu cores on the host
+            vb.customize ["modifyvm", :id, "--memory", "2048"]
+            vb.customize ["modifyvm", :id, "--cpus", "2"]
+            vb.customize ["modifyvm", :id, "--cpuexecutioncap", "90"]
+        end
     end
 end

@@ -54,13 +54,6 @@
     <import file="${package.dir}/common.xml" optional="true" />
 
     <!-- ==================================================================== -->
-    <!-- Cleans the directory used to copy in build files                     -->
-    <!-- ==================================================================== -->
-    <target name="clean-mount">
-        <delete dir="${temp.mount.dir}" includeemptydirs="true" quiet="false" verbose="false" failonerror="true"/>
-    </target>
-
-    <!-- ==================================================================== -->
     <!-- Cleans the target directories                                        -->
     <!-- ==================================================================== -->
     <target name="clean">
@@ -85,16 +78,6 @@
         <delete includeemptydirs="true" quiet="false" verbose="false" failonerror="true">
             <fileset dir="${reports.dir}" includes="**/*"/>
         </delete>
-    </target>
-
-    <!-- ==================================================================== -->
-    <!-- Prepares the directoy used to mount from the vagrant box             -->
-    <!-- ==================================================================== -->
-    <target name="prepare-mount" depends="clean-mount">
-        <mkdir dir="${temp.mount.dir}" />
-        <mkdir dir="${temp.mount.dir}/reports" />
-        <mkdir dir="${temp.mount.dir}/build" />
-        <mkdir dir="${temp.mount.dir}/src" />
     </target>
 
     <!-- ==================================================================== -->
@@ -160,35 +143,6 @@
     </target>
 
     <!-- ==================================================================== -->
-    <!-- Will prepare a mount point for the AFP mount of the build data       -->
-    <!-- ==================================================================== -->
-    <target name="prepare-build-mounts" depends="prepare-mount">
-        <!-- trying to mount the needed directories -->
-        <exec dir="${temp.mount.dir}" executable="mount_afp">
-            <arg line="'afp://${vagrant.user.name}:${vagrant.user.password}@127.0.0.1:${vagrant.afp.local-port}/vagrant' '${temp.mount.dir}'" />
-        </exec>
-        <exec dir="${temp.mount.dir}" executable="mount_afp">
-            <arg line="'afp://${vagrant.user.name}:${vagrant.user.password}@127.0.0.1:${vagrant.afp.local-port}/vagrant/build' '${temp.mount.dir}/build'" />
-        </exec>
-        <exec dir="${temp.mount.dir}" executable="mount_afp">
-            <arg line="'afp://${vagrant.user.name}:${vagrant.user.password}@127.0.0.1:${vagrant.afp.local-port}/vagrant/reports' '${temp.mount.dir}/reports'" />
-        </exec>
-        <exec dir="${temp.mount.dir}" executable="mount_afp">
-            <arg line="'afp://${vagrant.user.name}:${vagrant.user.password}@127.0.0.1:${vagrant.afp.local-port}/vagrant/src' '${temp.mount.dir}/src'" />
-        </exec>
-        <!-- copy the build files into the mount -->
-        <copy todir="${temp.mount.dir}" failonerror="true">
-            <fileset dir="${temp.dir}">
-               <include name="*/**"/>
-               <exclude name="Vagrantfile"/>
-               <exclude name="provision.sh"/>
-            </fileset>
-        </copy>
-        <!-- prepare a tmp dir for work within the VM -->
-        <mkdir dir="${temp.mount.dir}/tmp" />
-    </target>
-
-    <!-- ==================================================================== -->
     <!-- Will test if the targeted box is already up and running.             -->
     <!-- Will set the properties "vagrant-box.running" or                     -->
     <!-- "vagrant-box.not-running" depending on the result                    -->
@@ -237,8 +191,6 @@
         <exec dir="${temp.dir}" executable="vagrant" errorproperty="vagrant-box.start.failed">
             <arg line="up ${vagrant-box.name} --provider=${vagrant.provider} --destroy-on-error" />
         </exec>
-        <!-- prepare the mount point -->
-        <antcall target="prepare-build-mounts" />
         <!-- eliminate the possiblity of empty but existing error output -->
         <property name="vagrant-box.start.failed" value=""/>
         <condition property="fatal-error.occured" value="${vagrant-box.start.failed}">
@@ -304,12 +256,12 @@
         <create-package-name 
             tag="${appserver.src.version}"
             outputProperty="SOURCE_PACKAGE_NAME"
-            prefix="${build.name.prefix}source" 
-            build="${build.number}" 
-            suffixSeparator="+" 
-            versionSeparator="_" 
-            architecture="${build.name.suffix}" 
-            architectureSeparator="_" 
+            prefix="${build.name.prefix}source"
+            build="${build.number}"
+            suffixSeparator="+"
+            versionSeparator="_"
+            architecture="${os.architecture}"
+            architectureSeparator="_"
             extension="${build.name.ext}" />
         <!-- copy packaging build files to target -->
         <copy todir="${target.dir}">
@@ -345,12 +297,12 @@
         <create-package-name 
             tag="${appserver.runtime.version}"
             outputProperty="RUNTIME_SOURCE_PACKAGE_NAME"
-            prefix="${build.name.prefix}runtime" 
-            build="${appserver.runtime.build}" 
-            suffixSeparator="+" 
-            versionSeparator="_" 
-            architecture="${build.name.suffix}" 
-            architectureSeparator="_" 
+            prefix="${build.name.prefix}runtime"
+            build="${appserver.runtime.build}"
+            suffixSeparator="+"
+            versionSeparator="_"
+            architecture="${os.architecture}"
+            architectureSeparator="_"
             extension="tar.gz" />
         <!-- get runtime in specific version as tar.gz -->
         <get src="${appserver.runtime.url}/${RUNTIME_SOURCE_PACKAGE_NAME}" dest="${temp.dir}/${RUNTIME_SOURCE_PACKAGE_NAME}" />
@@ -374,12 +326,12 @@
         <create-package-name 
             tag="${appserver.runtime.version}"
             outputProperty="RUNTIME_DIST_PACKAGE_NAME"
-            prefix="${build.name.prefix}runtime" 
-            build="${appserver.runtime.build}" 
-            suffixSeparator="+" 
-            versionSeparator="_" 
-            architecture="${build.name.suffix}" 
-            architectureSeparator="_" 
+            prefix="${build.name.prefix}runtime"
+            build="${appserver.runtime.build}"
+            suffixSeparator="+"
+            versionSeparator="_"
+            architecture="${os.architecture}"
+            architectureSeparator="_"
             extension="${build.name.ext}" />
         <!-- build sub pkg for osx -->
         <exec dir="${basedir}" executable="pkgbuild">
@@ -405,12 +357,12 @@
         <create-package-name 
             tag="${appserver.src.version}"
             outputProperty="DIST_PACKAGE_NAME"
-            prefix="${build.name.prefix}dist" 
-            build="${build.number}" 
-            suffixSeparator="+" 
-            versionSeparator="_" 
-            architecture="${build.name.suffix}" 
-            architectureSeparator="_" 
+            prefix="${build.name.prefix}dist"
+            build="${build.number}"
+            suffixSeparator="+"
+            versionSeparator="_"
+            architecture="${os.architecture}"
+            architectureSeparator="_"
             extension="${build.name.ext}" />
         <!-- copy packaging build files to target -->
         <copy todir="${target.dir}">
