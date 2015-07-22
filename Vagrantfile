@@ -19,7 +19,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         osx.vm.box_url = "${vagrant-box.baseurl}/${vagrant-box.name}.box"
 
         # Basic network configuration
-        osx.vm.host_name = "${vagrant-box.name}"
         osx.vm.base_mac = "080027BE1722"
 
         # Share some needed folders
