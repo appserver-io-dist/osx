@@ -7,3 +7,5 @@
 .project
 ._.DS_Store
 build.properties
+/.buildpath
+/vendor
