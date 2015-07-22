@@ -29,7 +29,7 @@
         <!-- try to install the appserver dist package -->
         <exec dir="${test.basedir}" executable="bash" failonerror="true">
             <arg value="-c" />
-            <arg value="dpkg -i ${vagrant-build.dir}/${DIST_PACKAGE_NAME}" />
+            <arg value="installer -pkg ${vagrant-build.dir}/${DIST_PACKAGE_NAME} -target /" />
         </exec>
     </target>
 
