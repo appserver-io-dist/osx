@@ -21,10 +21,10 @@
             outputProperty="DIST_PACKAGE_NAME"
             prefix="${build.name.prefix}dist"
             build="${build.number}"
-            suffixSeparator="."
-            versionSeparator="_"
+            suffixSeparator="${generic.package.suffix-separator}"
+            versionSeparator="${generic.package.version-separator}"
             architecture="${os.architecture}"
-            architectureSeparator="_"
+            architectureSeparator="${generic.package.architecture-separator}"
             extension="${build.name.ext}" />
         <!-- try to install the appserver dist package -->
         <exec dir="${test.basedir}" executable="bash" failonerror="true">
@@ -43,10 +43,10 @@
             outputProperty="RUNTIME_DIST_PACKAGE_NAME"
             prefix="${build.name.prefix}runtime"
             build="${appserver.runtime.build}"
-            suffixSeparator="+"
-            versionSeparator="_"
+            suffixSeparator="${generic.package.suffix-separator}"
+            versionSeparator="${generic.package.version-separator}"
             architecture="${os.architecture}"
-            architectureSeparator="_"
+            architectureSeparator="${generic.package.architecture-separator}"
             extension="${build.name.ext}" />
         <!-- try to install the appserver runtime -->
         <exec dir="${test.basedir}" executable="bash">
