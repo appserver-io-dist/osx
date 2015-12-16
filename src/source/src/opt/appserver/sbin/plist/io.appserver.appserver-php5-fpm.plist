@@ -4,6 +4,11 @@
     <dict>
         <key>Label</key>
         <string>io.appserver.appserver-php5-fpm</string>
+        <key>EnvironmentVariables</key>
+        <dict>
+            <key>DYLD_FALLBACK_LIBRARY_PATH</key>
+            <string>/opt/appserver/lib</string>
+        </dict>
         <key>ProgramArguments</key>
         <array>
             <string>/opt/appserver/sbin/php-fpm</string>
