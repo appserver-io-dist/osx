@@ -299,10 +299,10 @@
             outputProperty="RUNTIME_SOURCE_PACKAGE_NAME"
             prefix="${build.name.prefix}runtime"
             build="${appserver.runtime.build}"
-            suffixSeparator="+"
-            versionSeparator="_"
+            suffixSeparator="${generic.package.suffix-separator}"
+            versionSeparator="${generic.package.version-separator}"
             architecture="${os.architecture}"
-            architectureSeparator="_"
+            architectureSeparator="${generic.package.architecture-separator}"
             extension="tar.gz" />
         <!-- get runtime in specific version as tar.gz -->
         <get src="${appserver.runtime.url}/${RUNTIME_SOURCE_PACKAGE_NAME}" dest="${temp.dir}/${RUNTIME_SOURCE_PACKAGE_NAME}" />
