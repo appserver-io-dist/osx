@@ -3,8 +3,5 @@
 # Set the default appserver installation directory
 APPSERVER_ROOT="/opt/appserver"
 
-# Set the fallback path for the dyld libraries 
-export DYLD_FALLBACK_LIBRARY_PATH=$APPSERVER_ROOT/lib:$DYLD_FALLBACK_LIBRARY_PATH
-
 cd $APPSERVER_ROOT
 $APPSERVER_ROOT/bin/php -dappserver.php_sapi=appserver -f server.php -- -w
