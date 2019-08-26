@@ -1,7 +1,7 @@
 {
     "name": "appserver-io-dist/osx",
-    "description": "macos build files used for Apple infrastructure",
-    "homepage": "https://github.com/appserver-io/appserver",
+    "description": "macos build files used for Apple infrastructure builds",
+    "homepage": "https://github.com/appserver-io-dist/osx",
     "license": "OSL-3.0",
     "authors": [
         {
