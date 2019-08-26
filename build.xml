@@ -9,7 +9,7 @@
 
     <!-- ==================================================================== -->
     <!-- Generate a time stamp for further use in build targets               -->
-    <!-- ==================================================================== --> 
+    <!-- ==================================================================== -->
     <tstamp>
         <format property="time.stamp" pattern="yyyy-MM-dd-HHmmss"/>
     </tstamp>
@@ -231,10 +231,10 @@
         <!-- remove git db files -->
         <delete dir="${target.dir}/src/opt/appserver/.git" includeemptydirs="true" />
         <!-- create version name -->
-        <create-version-name 
+        <create-version-name
             tag="${appserver.src.version}"
-            build="${build.number}" 
-            suffixSeparator="+" 
+            build="${build.number}"
+            suffixSeparator="+"
             outputProperty="VERSION_NAME" />
         <!-- create the file with the version number -->
         <echo file="${target.dir}/src/opt/appserver/etc/appserver/.release-version" message="${VERSION_NAME}" />
@@ -254,7 +254,7 @@
     <!-- ==================================================================== -->
     <target name="create-appserver-source-pkg" depends="prepare-appserver-source">
         <!-- create source package name -->
-        <create-package-name 
+        <create-package-name
             tag="${appserver.src.version}"
             outputProperty="SOURCE_PACKAGE_NAME"
             prefix="${build.name.prefix}source"
@@ -295,7 +295,7 @@
     <!-- ==================================================================== -->
     <target name="create-appserver-runtime-pkg" depends="prepare">
         <!-- create runtime source package name -->
-        <create-package-name 
+        <create-package-name
             tag="${appserver.runtime.version}"
             outputProperty="RUNTIME_SOURCE_PACKAGE_NAME"
             prefix="${build.name.prefix}runtime"
@@ -324,7 +324,7 @@
         <!-- make the install scripts executable -->
         <chmod perm="755" dir="${target.dir}/scripts" includes="*" />
         <!-- create runtime dist package name -->
-        <create-package-name 
+        <create-package-name
             tag="${appserver.runtime.version}"
             outputProperty="RUNTIME_DIST_PACKAGE_NAME"
             prefix="${build.name.prefix}runtime"
@@ -355,7 +355,7 @@
     <!-- ==================================================================== -->
     <target name="local-build" depends="prepare-build, create-appserver-source-pkg, create-appserver-runtime-pkg, prepare">
         <!-- create dist package name -->
-        <create-package-name 
+        <create-package-name
             tag="${appserver.src.version}"
             outputProperty="DIST_PACKAGE_NAME"
             prefix="${build.name.prefix}dist"
@@ -391,7 +391,7 @@
             <arg value="${build.dir}/${DIST_PACKAGE_NAME}" />
         </exec>
     </target>
-    
+
     <!-- ==================================================================== -->
     <!-- Extracts version and suffix from a tag                               -->
     <!-- ==================================================================== -->
@@ -407,7 +407,7 @@
         var build = attributes.get("build");
         var outputProperty= attributes.get("outputproperty");
         var suffixSeparator = attributes.get("suffixseparator");
-        
+
         // declare version and version suffix
         var versionName = '';
         var resultSuffix = '';
@@ -420,7 +420,7 @@
            resultVersion = tag.substring(0, tag.indexOf("-"));
            resultSuffix = tag.replace(resultVersion + "-", "");
         }
-        
+
         // initialize the version name
         versionName = resultVersion;
 
@@ -471,7 +471,7 @@
         // declare version and version suffix
         var resultVersion = tag;
         var resultSuffix = '';
-        
+
         // the package name ALWAYS starts with the prefix
         packageName = prefix;
 
@@ -507,7 +507,7 @@
         if (extension != "") {
             packageName += "." + extension;
         }
-        
+
         // store the result in output property
         project.setProperty(outputProperty, packageName);
     ]]>
